@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a202c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Pokémon Stock Alerts</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon.png">
+</head>
+<body>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+                <button class="close-btn" onclick="closeSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-item">
+                    <span>🌙 Dark Mode</span>
+                    <span class="setting-value">Enabled</span>
+                </div>
+                <div class="setting-item disabled">
+                    <span>🔔 Push Notifications</span>
+                    <span class="setting-value">Coming Soon</span>
+                </div>
+                <div class="setting-item" onclick="confirmClearHistory()">
+                    <span>🗑️ Clear History</span>
+                    <span class="setting-value">→</span>
+                </div>
+                <div class="setting-item">
+                    <span>ℹ️ Version</span>
+                    <span class="setting-value">1.0.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⏰ History</h2>
+                <button class="close-btn" onclick="closeHistory()">✕</button>
+            </div>
+            <div class="modal-body" id="historyContent">
+                <!-- History items will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="text" id="searchInput" placeholder="Search products..." class="search-input">
+                <button class="close-btn" onclick="closeSearch()">✕</button>
+            </div>
+            <div class="modal-body" id="searchResults">
+                <!-- Search results will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app">
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen active">
+            <header class="app-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="openSettings()">⚙️</button>
+                    <h1 class="app-title">Pokémon Stock Alerts</h1>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn" onclick="openSearch()">🔍</button>
+                    <button class="icon-btn" onclick="openHistory()">⏰</button>
+                </div>
+            </header>
+
+            <div class="content" id="categoryList">
+                <!-- Categories will be populated here -->
+            </div>
+        </div>
+
+        <!-- Category Feed Screen -->
+        <div id="categoryScreen" class="screen">
+            <header class="app-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="openSettings()">⚙️</button>
+                    <button class="icon-btn" onclick="goHome()">←</button>
+                    <h1 class="app-title" id="categoryTitle">Category</h1>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn" onclick="openSearch()">🔍</button>
+                    <button class="icon-btn" onclick="openHistory()">⏰</button>
+                </div>
+            </header>
+
+            <div class="content" id="notificationFeed">
+                <!-- Notifications will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Loading notifications...</p>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
