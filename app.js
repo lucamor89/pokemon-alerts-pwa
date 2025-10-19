@@ -92,16 +92,11 @@ async function fetchFromJSONBin(url, shopName) {
     }
 
     const data = await response.json();
-    const products = data.record.known_products || [];
-    const inStock = new Set(data.record.in_stock_products || []);
-
-    return products.map(name => ({
-        name,
-        shop: shopName,
-        in_stock: inStock.has(name),
-        link: null,
-        price: null
-    }));
+    
+    // NEW: Read from "products" array instead of "known_products"
+    const products = data.record.products || [];
+    
+    return products;  // Already has name, link, price, in_stock, shop!
 }
 
 // Detect product type
