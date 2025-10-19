@@ -2,7 +2,7 @@
   "name": "Pokémon Stock Alerts",
   "short_name": "PokéAlerts",
   "description": "Get notified when Pokémon TCG products are back in stock",
-  "start_url": "/",
+  "start_url": "/pokemon-alerts-pwa/",
   "display": "standalone",
   "background_color": "#1a202c",
   "theme_color": "#1a202c",
