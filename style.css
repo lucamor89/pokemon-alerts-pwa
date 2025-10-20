@@ -16,6 +16,7 @@
     --red-badge: #fc8181;
     --success: #48bb78;
     --warning: #ed8936;
+    --new-badge: #f6e05e; /* Yellow for NEW PRODUCT badge */
 }
 
 body {
@@ -208,6 +209,20 @@ body {
     margin-bottom: 8px;
     font-size: 13px;
     color: var(--text-secondary);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* NEW PRODUCT Badge - Issue #2 */
+.new-badge {
+    background-color: var(--new-badge);
+    color: #1a202c;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .view-product-btn {
