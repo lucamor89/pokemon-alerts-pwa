@@ -154,7 +154,7 @@ function renderHome() {
         card.innerHTML = `
             <div class="category-name ${hasNew ? 'has-new' : ''}">${category}</div>
             <div class="category-badge">
-                ${items.length > 0 ? `<span class="badge">${items.length}</span>` : ''}
+                ${unseenCount > 0 ? `<span class="badge">${unseenCount}</span>` : ''}
                 ${hasNew ? '<div class="red-dot"></div>' : ''}
             </div>
         `;
