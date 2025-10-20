@@ -59,7 +59,7 @@ async function fetchAllNotifications() {
         // Combine and convert to notification format
         const allProducts = [...badger, ...brotherhood, ...mythic];
         state.notifications = allProducts.map(item => ({
-            timestamp: new Date().toISOString(),
+            timestamp: item.first_seen || new Date().toISOString(),  // FIXED: Use first_seen from backend!
             product_name: item.name,
             product_link: item.link || '#',
             shop_name: item.shop,
