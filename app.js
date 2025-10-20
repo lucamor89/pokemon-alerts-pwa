@@ -10,23 +10,24 @@ const CONFIG = {
 
 // Product type detection
 const PRODUCT_TYPES = {
-    "Booster Box": ["booster box", "booster case"],
-    "Elite Trainer Box": ["elite trainer box", "etb"],
-    "Ultra-Premium Collection": ["ultra-premium collection", "ultra premium collection"],
-    "Premium Collection": ["premium collection"],
-    "Figure Collection": ["figure collection"],
-    "3 Pack Blister": ["3 pack blister", "3-pack blister", "three pack"],
-    "1 Pack Blister": ["1 pack blister", "1-pack blister", "single pack"],
-    "Booster Bundle": ["booster bundle"],
-    "Trainer's Toolkit": ["trainer's toolkit", "trainers toolkit"],
-    "Battle Deck": ["battle deck"],
-    "Box": ["box"]
+    "Booster Boxes": ["booster box", "booster case"],
+    "Elite Trainer Boxes": ["elite trainer box", "etb"],
+    "Ultra-Premium Collections": ["ultra-premium collection", "ultra premium collection"],
+    "Premium Collections": ["premium collection"],
+    "Figure Collections": ["figure collection"],
+    "Tins & Mini-Tins": ["tin", "mini tin", "mini-tin"],
+    "3 Pack Blisters": ["3 pack blister", "3-pack blister", "three pack"],
+    "1 Pack Blisters": ["1 pack blister", "1-pack blister", "single pack"],
+    "Booster Bundles": ["booster bundle"],
+    "Trainer's Toolkits": ["trainer's toolkit", "trainers toolkit"],
+    "Battle Decks": ["battle deck"],
+    "Collection Boxes": ["box"]
 };
 
 const ALL_PRODUCT_TYPES = [
-    "Booster Box", "Elite Trainer Box", "Ultra-Premium Collection", "Premium Collection",
-    "Figure Collection", "Booster Bundle", "3 Pack Blister", "1 Pack Blister",
-    "Trainer's Toolkit", "Battle Deck", "Box", "Other"
+    "Booster Boxes", "Elite Trainer Boxes", "Ultra-Premium Collections", "Premium Collections",
+    "Figure Collections", "Tins & Mini-Tins", "Booster Bundles", "3 Pack Blisters", "1 Pack Blisters",
+    "Trainer's Toolkits", "Battle Decks", "Collection Boxes", "Other"
 ];
 
 // Global state
