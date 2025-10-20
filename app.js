@@ -63,8 +63,8 @@ async function fetchAllNotifications() {
             product_name: item.name,
             product_link: item.link || '#',
             shop_name: item.shop,
-            status: item.in_stock ? 'In stock' : 'Out of stock',
             price: item.price || null,
+            is_new: item.is_new || false,  // Track if product is new
             id: generateId(item.name, item.shop)
         }));
 
@@ -203,7 +203,7 @@ function renderCategoryFeed(category) {
             <div class="product-name">${notif.product_name}</div>
             <div class="notification-info">
                 ${notif.price ? `<span>💰 ${notif.price}</span>` : ''}
-                ${notif.status ? `<span>📦 ${notif.status}</span>` : ''}
+                ${notif.is_new ? '<span class="new-badge">NEW PRODUCT!</span>' : ''}
             </div>
             <a href="${notif.product_link}" class="view-product-btn" target="_blank" rel="noopener">
                 🔗 View Product
@@ -268,7 +268,7 @@ function openHistory() {
                 <div class="product-name">${notif.product_name}</div>
                 <div class="notification-info">
                     ${notif.price ? `<span>💰 ${notif.price}</span>` : ''}
-                    ${notif.status ? `<span>📦 ${notif.status}</span>` : ''}
+                    ${notif.is_new ? '<span class="new-badge">NEW PRODUCT!</span>' : ''}
                 </div>
                 <a href="${notif.product_link}" class="view-product-btn" target="_blank" rel="noopener">
                     🔗 View Product
@@ -326,7 +326,7 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
                 <div class="product-name">${notif.product_name}</div>
                 <div class="notification-info">
                     ${notif.price ? `<span>💰 ${notif.price}</span>` : ''}
-                    ${notif.status ? `<span>📦 ${notif.status}</span>` : ''}
+                    ${notif.is_new ? '<span class="new-badge">NEW PRODUCT!</span>' : ''}
                 </div>
                 <a href="${notif.product_link}" class="view-product-btn" target="_blank" rel="noopener">
                     🔗 View Product
