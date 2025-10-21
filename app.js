@@ -656,7 +656,8 @@ function setupBackButton() {
 
 // Utility functions
 function generateId(name, shop) {
-    return `${shop}_${name}`.replace(/\s+/g, '_');
+    // Remove all special characters that could break HTML attributes
+    return `${shop}_${name}`.replace(/[^a-zA-Z0-9_]/g, '_');
 }
 
 function formatDate(isoString) {
