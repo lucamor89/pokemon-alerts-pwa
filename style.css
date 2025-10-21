@@ -17,6 +17,7 @@
     --success: #48bb78;
     --warning: #ed8936;
     --new-badge: #f6e05e; /* Yellow for NEW PRODUCT badge */
+    --pin-indicator: #fbbf24; /* Gold for pin indicator */
 }
 
 body {
@@ -26,6 +27,8 @@ body {
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* App Container */
@@ -172,6 +175,27 @@ body {
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 12px;
+    position: relative;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+}
+
+.notification-card:active {
+    background-color: #374151;
+}
+
+/* Pin Indicator */
+.pin-indicator {
+    background-color: var(--pin-indicator);
+    color: #1a202c;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .notification-header {
@@ -213,7 +237,7 @@ body {
     align-items: center;
 }
 
-/* NEW PRODUCT Badge - Issue #2 */
+/* NEW PRODUCT Badge */
 .new-badge {
     background-color: var(--new-badge);
     color: #1a202c;
@@ -238,6 +262,76 @@ body {
 
 .view-product-btn:active {
     opacity: 0.6;
+}
+
+/* Context Menu (Long-Press) */
+.context-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1500;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.context-menu:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.context-menu-content {
+    background-color: var(--bg-secondary);
+    border-radius: 16px;
+    width: 85%;
+    max-width: 400px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.context-menu-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.context-menu-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.context-option {
+    padding: 18px 20px;
+    font-size: 16px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.context-option:last-child {
+    border-bottom: none;
+}
+
+.context-option:active {
+    background-color: #374151;
+}
+
+.context-option.cancel {
+    color: var(--red-badge);
+    font-weight: 600;
 }
 
 /* Modal */
