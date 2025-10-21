@@ -196,15 +196,21 @@ function openCategory(category, scrollToNotifId = null) {
         setTimeout(() => {
             const element = document.querySelector(`[data-id="${scrollToNotifId}"]`);
             if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Scroll with proper positioning
+                element.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                });
+                
                 // Highlight briefly
                 element.style.transition = 'background-color 0.5s';
-                element.style.backgroundColor = '#374151';
+                element.style.backgroundColor = '#4a5568';
                 setTimeout(() => {
                     element.style.backgroundColor = '';
                 }, 1000);
             }
-        }, 100);
+        }, 300); // Longer delay to ensure DOM is ready
     }
 }
 
@@ -263,28 +269,38 @@ function renderCategoryFeed(category) {
         </div>
     `).join('');
     
-    // Add long-press handlers and link click handlers
+    // Wait for DOM to be ready, then add event listeners
+    setTimeout(() => {
+        attachNotificationListeners(container);
+    }, 0);
+}
+
+// Attach event listeners to notification cards (for category feeds)
+function attachNotificationListeners(container) {
     container.querySelectorAll('.notification-card').forEach(card => {
         const notifId = card.getAttribute('data-id');
+        if (!notifId) return;
         
-        // Long-press for context menu
-        card.addEventListener('mousedown', (e) => {
+        // Remove old listeners by cloning and replacing
+        const newCard = card.cloneNode(true);
+        card.parentNode.replaceChild(newCard, card);
+        
+        // Long-press for context menu (but not on links)
+        const startHandler = (e) => {
             if (!e.target.closest('a')) {
                 handleLongPressStart(e, notifId);
             }
-        });
-        card.addEventListener('touchstart', (e) => {
-            if (!e.target.closest('a')) {
-                handleLongPressStart(e, notifId);
-            }
-        });
-        card.addEventListener('mouseup', handleLongPressEnd);
-        card.addEventListener('touchend', handleLongPressEnd);
-        card.addEventListener('mouseleave', handleLongPressEnd);
-        card.addEventListener('touchcancel', handleLongPressEnd);
+        };
+        
+        newCard.addEventListener('mousedown', startHandler);
+        newCard.addEventListener('touchstart', startHandler, { passive: true });
+        newCard.addEventListener('mouseup', handleLongPressEnd);
+        newCard.addEventListener('touchend', handleLongPressEnd);
+        newCard.addEventListener('mouseleave', handleLongPressEnd);
+        newCard.addEventListener('touchcancel', handleLongPressEnd);
         
         // Ensure links work
-        const link = card.querySelector('.view-product-btn');
+        const link = newCard.querySelector('.view-product-btn');
         if (link) {
             link.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -409,10 +425,25 @@ function goHome() {
 
 // Switch screen
 function switchScreen(screenId) {
+    // Remove active from all screens
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
+        // Force reset transform
+        screen.style.transform = '';
     });
-    document.getElementById(screenId).classList.add('active');
+    
+    // Activate target screen
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+        // Force correct transform
+        targetScreen.style.transform = 'translateX(0)';
+        // Reset scroll position
+        const content = targetScreen.querySelector('.content');
+        if (content) {
+            content.scrollTop = 0;
+        }
+    }
 }
 
 // Settings
@@ -487,7 +518,16 @@ function closeHistory() {
 // Search
 function openSearch() {
     document.getElementById('searchModal').classList.remove('hidden');
-    document.getElementById('searchInput').focus();
+    const searchInput = document.getElementById('searchInput');
+    searchInput.focus();
+    
+    // Dismiss keyboard when user presses Enter/Go
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchInput.blur(); // Dismiss keyboard
+        }
+    });
 }
 
 function closeSearch() {
