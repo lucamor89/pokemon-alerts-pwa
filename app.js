@@ -269,9 +269,11 @@ function renderCategoryFeed(category) {
         </div>
     `).join('');
     
-    // Use requestAnimationFrame to ensure DOM is ready
+    // Double requestAnimationFrame for more reliable DOM readiness
     requestAnimationFrame(() => {
-        attachNotificationListeners(container);
+        requestAnimationFrame(() => {
+            attachNotificationListeners(container);
+        });
     });
 }
 
@@ -279,16 +281,11 @@ function renderCategoryFeed(category) {
 function attachNotificationListeners(container) {
     const cards = container.querySelectorAll('.notification-card');
     
-    console.log(`Attaching listeners to ${cards.length} cards`); // Debug log
-    
     cards.forEach(card => {
         const notifId = card.getAttribute('data-id');
         if (!notifId) {
-            console.log('Card missing data-id:', card); // Debug log
             return;
         }
-        
-        console.log(`Attaching to card: ${notifId}`); // Debug log
         
         // Create handler functions
         const handleStart = (e) => {
@@ -296,7 +293,6 @@ function attachNotificationListeners(container) {
             if (e.target.closest('a') || e.target.closest('button')) {
                 return;
             }
-            console.log(`Long press started on: ${notifId}`); // Debug log
             handleLongPressStart(e, notifId);
         };
         
