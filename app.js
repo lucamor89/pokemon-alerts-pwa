@@ -269,42 +269,63 @@ function renderCategoryFeed(category) {
         </div>
     `).join('');
     
-    // Wait for DOM to be ready, then add event listeners
-    setTimeout(() => {
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
         attachNotificationListeners(container);
-    }, 0);
+    });
 }
 
 // Attach event listeners to notification cards (for category feeds)
 function attachNotificationListeners(container) {
-    container.querySelectorAll('.notification-card').forEach(card => {
+    const cards = container.querySelectorAll('.notification-card');
+    
+    console.log(`Attaching listeners to ${cards.length} cards`); // Debug log
+    
+    cards.forEach(card => {
         const notifId = card.getAttribute('data-id');
-        if (!notifId) return;
+        if (!notifId) {
+            console.log('Card missing data-id:', card); // Debug log
+            return;
+        }
         
-        // Remove old listeners by cloning and replacing
-        const newCard = card.cloneNode(true);
-        card.parentNode.replaceChild(newCard, card);
+        console.log(`Attaching to card: ${notifId}`); // Debug log
         
-        // Long-press for context menu (but not on links)
-        const startHandler = (e) => {
-            if (!e.target.closest('a')) {
-                handleLongPressStart(e, notifId);
+        // Create handler functions
+        const handleStart = (e) => {
+            // Don't trigger on links or buttons
+            if (e.target.closest('a') || e.target.closest('button')) {
+                return;
             }
+            console.log(`Long press started on: ${notifId}`); // Debug log
+            handleLongPressStart(e, notifId);
         };
         
-        newCard.addEventListener('mousedown', startHandler);
-        newCard.addEventListener('touchstart', startHandler, { passive: true });
-        newCard.addEventListener('mouseup', handleLongPressEnd);
-        newCard.addEventListener('touchend', handleLongPressEnd);
-        newCard.addEventListener('mouseleave', handleLongPressEnd);
-        newCard.addEventListener('touchcancel', handleLongPressEnd);
+        const handleEnd = () => {
+            handleLongPressEnd();
+        };
         
-        // Ensure links work
-        const link = newCard.querySelector('.view-product-btn');
+        // Remove any existing listeners (clean slate)
+        card.removeEventListener('mousedown', handleStart);
+        card.removeEventListener('touchstart', handleStart);
+        card.removeEventListener('mouseup', handleEnd);
+        card.removeEventListener('touchend', handleEnd);
+        card.removeEventListener('mouseleave', handleEnd);
+        card.removeEventListener('touchcancel', handleEnd);
+        
+        // Add fresh listeners
+        card.addEventListener('mousedown', handleStart);
+        card.addEventListener('touchstart', handleStart, { passive: false });
+        card.addEventListener('mouseup', handleEnd);
+        card.addEventListener('touchend', handleEnd);
+        card.addEventListener('mouseleave', handleEnd);
+        card.addEventListener('touchcancel', handleEnd);
+        
+        // Handle links separately
+        const link = card.querySelector('.view-product-btn');
         if (link) {
             link.addEventListener('click', (e) => {
                 e.stopPropagation();
-                handleLongPressEnd(); // Cancel any long-press
+                handleLongPressEnd();
             });
         }
     });
