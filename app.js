@@ -39,7 +39,8 @@ let state = {
     currentCategory: null,
     lastBackPress: 0,
     longPressTimer: null,
-    longPressTarget: null
+    longPressTarget: null,
+    contextMenuOpen: false
 };
 
 // Initialize app
@@ -350,20 +351,13 @@ function showContextMenu(notifId) {
     `;
 
     menu.classList.remove('hidden');
-    
-    // Add history state for back button handling
-    window.history.pushState({ contextMenuOpen: true }, '');
+    state.contextMenuOpen = true;
 }
 
 function closeContextMenu() {
     const menu = document.getElementById('contextMenu');
-    if (!menu.classList.contains('hidden')) {
-        menu.classList.add('hidden');
-        // Remove the history state if it was added by context menu
-        if (window.history.state && window.history.state.contextMenuOpen) {
-            window.history.back();
-        }
-    }
+    menu.classList.add('hidden');
+    state.contextMenuOpen = false;
 }
 
 // Toggle pin
@@ -568,27 +562,34 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
 // Back button handling
 function setupBackButton() {
     window.addEventListener('popstate', (e) => {
-        // Check if context menu is open
-        const contextMenu = document.getElementById('contextMenu');
-        if (contextMenu && !contextMenu.classList.contains('hidden')) {
+        // Priority 1: If context menu is open, close it
+        if (state.contextMenuOpen) {
             closeContextMenu();
+            // Prevent default navigation
+            window.history.pushState(null, '', window.location.href);
             return;
         }
         
+        // Priority 2: If in a category, go back to home
         if (state.currentCategory) {
             goHome();
+            // Prevent default navigation - we handle it ourselves
+            window.history.pushState(null, '', window.location.href);
+            return;
+        }
+        
+        // Priority 3: If on home screen, double-tap to exit
+        const now = Date.now();
+        if (now - state.lastBackPress < 2000) {
+            // User pressed back twice quickly - let them exit
+            // Don't prevent navigation this time
+            return;
         } else {
-            // Double tap to exit
-            const now = Date.now();
-            if (now - state.lastBackPress < 2000) {
-                // User wants to exit
-                window.history.back();
-            } else {
-                state.lastBackPress = now;
-                showToast('Press again to exit');
-                // Prevent actual navigation
-                window.history.pushState(null, '', window.location.href);
-            }
+            // First back press on home - show toast
+            state.lastBackPress = now;
+            showToast('Press back again to exit');
+            // Prevent actual navigation
+            window.history.pushState(null, '', window.location.href);
         }
     });
 
