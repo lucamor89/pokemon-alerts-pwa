@@ -66,8 +66,8 @@
     </div>
 
     <!-- Search Modal -->
-    <div id="searchModal" class="modal hidden">
-        <div class="modal-content">
+    <div id="searchModal" class="modal hidden" onclick="closeSearch()">
+        <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <input type="text" id="searchInput" placeholder="Search products or type /unread /pinned..." class="search-input">
                 <button class="close-btn" onclick="closeSearch()">✕</button>
