@@ -81,10 +81,10 @@ async function fetchAllNotifications() {
 
         saveLocalState();
         renderHome();
-        showToast('Notifications updated!');
+        // No toast on success - silent background update
     } catch (error) {
         console.error('Error fetching notifications:', error);
-        showToast('Failed to load notifications');
+        showToast('⚠️ Failed to load notifications');
     } finally {
         showLoading(false);
     }
@@ -614,7 +614,10 @@ function formatDate(isoString) {
 }
 
 function showLoading(show) {
-    document.getElementById('loadingIndicator').classList.toggle('hidden', !show);
+    const spinner = document.getElementById('headerSpinner');
+    if (spinner) {
+        spinner.classList.toggle('hidden', !show);
+    }
 }
 
 function showToast(message) {
