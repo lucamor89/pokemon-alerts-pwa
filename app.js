@@ -34,8 +34,12 @@ const ALL_PRODUCT_TYPES = [
 let state = {
     notifications: [],
     seenIds: new Set(),
+    pinnedIds: new Set(),
+    unreadIds: new Set(),
     currentCategory: null,
-    lastBackPress: 0
+    lastBackPress: 0,
+    longPressTimer: null,
+    longPressTarget: null
 };
 
 // Initialize app
@@ -59,15 +63,20 @@ async function fetchAllNotifications() {
 
         // Combine and convert to notification format
         const allProducts = [...badger, ...brotherhood, ...mythic];
-        state.notifications = allProducts.map(item => ({
-            timestamp: item.first_seen || new Date().toISOString(),  // FIXED: Use first_seen from backend!
-            product_name: item.name,
-            product_link: item.link || '#',
-            shop_name: item.shop,
-            price: item.price || null,
-            is_new: item.is_new || false,  // Track if product is new
-            id: generateId(item.name, item.shop)
-        }));
+        state.notifications = allProducts.map(item => {
+            const id = generateId(item.name, item.shop);
+            return {
+                timestamp: item.first_seen || new Date().toISOString(),
+                product_name: item.name,
+                product_link: item.link || '#',
+                shop_name: item.shop,
+                price: item.price || null,
+                is_new: item.is_new || false,
+                id: id,
+                isPinned: state.pinnedIds.has(id),
+                isUnread: state.unreadIds.has(id)
+            };
+        });
 
         saveLocalState();
         renderHome();
@@ -93,11 +102,9 @@ async function fetchFromJSONBin(url, shopName) {
     }
 
     const data = await response.json();
-    
-    // NEW: Read from "products" array instead of "known_products"
     const products = data.record.products || [];
     
-    return products;  // Already has name, link, price, in_stock, shop!
+    return products;
 }
 
 // Detect product type
@@ -144,7 +151,7 @@ function renderHome() {
 
     ALL_PRODUCT_TYPES.forEach(category => {
         const items = grouped[category];
-        const unseenCount = items.filter(item => !state.seenIds.has(item.id)).length;
+        const unseenCount = items.filter(item => !state.seenIds.has(item.id) || item.isUnread).length;
         const hasNew = unseenCount > 0;
 
         const card = document.createElement('div');
@@ -167,10 +174,17 @@ function renderHome() {
 function openCategory(category) {
     state.currentCategory = category;
     
-    // Mark all in this category as seen
+    // Mark all in this category as seen (but respect unread status)
     const grouped = groupNotificationsByType();
     const items = grouped[category];
-    items.forEach(item => state.seenIds.add(item.id));
+    items.forEach(item => {
+        state.seenIds.add(item.id);
+        // Remove from unread when viewing
+        if (item.isUnread) {
+            state.unreadIds.delete(item.id);
+            item.isUnread = false;
+        }
+    });
     saveLocalState();
 
     renderCategoryFeed(category);
@@ -182,7 +196,7 @@ function renderCategoryFeed(category) {
     document.getElementById('categoryTitle').textContent = category;
     
     const grouped = groupNotificationsByType();
-    const items = grouped[category];
+    let items = grouped[category];
     const container = document.getElementById('notificationFeed');
     
     if (items.length === 0) {
@@ -195,8 +209,18 @@ function renderCategoryFeed(category) {
         return;
     }
 
-    container.innerHTML = items.reverse().map(notif => `
-        <div class="notification-card">
+    // Sort: Pinned first, then by timestamp (newest first)
+    items = sortNotifications(items);
+
+    container.innerHTML = items.map(notif => `
+        <div class="notification-card" data-id="${notif.id}" 
+             onmousedown="handleLongPressStart(event, '${notif.id}')"
+             ontouchstart="handleLongPressStart(event, '${notif.id}')"
+             onmouseup="handleLongPressEnd()"
+             ontouchend="handleLongPressEnd()"
+             onmouseleave="handleLongPressEnd()"
+             ontouchcancel="handleLongPressEnd()">
+            ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
             <div class="notification-header">
                 <div class="shop-name">🏪 ${notif.shop_name}</div>
                 <div class="notification-time">🕐 ${formatDate(notif.timestamp)}</div>
@@ -211,6 +235,107 @@ function renderCategoryFeed(category) {
             </a>
         </div>
     `).join('');
+}
+
+// Sort notifications: Pinned first, then by date
+function sortNotifications(items) {
+    return items.sort((a, b) => {
+        // Pinned items come first
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        
+        // Within same pin status, sort by timestamp (newest first)
+        return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+}
+
+// Long-press handling
+function handleLongPressStart(event, notifId) {
+    event.preventDefault();
+    
+    state.longPressTarget = notifId;
+    state.longPressTimer = setTimeout(() => {
+        showContextMenu(notifId);
+    }, 500); // 500ms hold to trigger
+}
+
+function handleLongPressEnd() {
+    if (state.longPressTimer) {
+        clearTimeout(state.longPressTimer);
+        state.longPressTimer = null;
+    }
+}
+
+// Show context menu
+function showContextMenu(notifId) {
+    const notif = state.notifications.find(n => n.id === notifId);
+    if (!notif) return;
+
+    const menu = document.getElementById('contextMenu');
+    const menuTitle = document.getElementById('contextMenuTitle');
+    const menuOptions = document.getElementById('contextMenuOptions');
+
+    menuTitle.textContent = notif.product_name.substring(0, 50) + (notif.product_name.length > 50 ? '...' : '');
+
+    const pinText = notif.isPinned ? '📌 Unpin Notification' : '📌 Pin Notification';
+    
+    menuOptions.innerHTML = `
+        <div class="context-option" onclick="togglePin('${notifId}')">
+            ${pinText}
+        </div>
+        <div class="context-option" onclick="markAsUnread('${notifId}')">
+            👁️ Mark as Unread
+        </div>
+        <div class="context-option cancel" onclick="closeContextMenu()">
+            ❌ Cancel
+        </div>
+    `;
+
+    menu.classList.remove('hidden');
+}
+
+function closeContextMenu() {
+    document.getElementById('contextMenu').classList.add('hidden');
+}
+
+// Toggle pin
+function togglePin(notifId) {
+    const notif = state.notifications.find(n => n.id === notifId);
+    if (!notif) return;
+
+    notif.isPinned = !notif.isPinned;
+    
+    if (notif.isPinned) {
+        state.pinnedIds.add(notifId);
+        showToast('Notification pinned!');
+    } else {
+        state.pinnedIds.delete(notifId);
+        showToast('Notification unpinned!');
+    }
+
+    saveLocalState();
+    
+    // Re-render current view
+    if (state.currentCategory) {
+        renderCategoryFeed(state.currentCategory);
+    }
+    
+    closeContextMenu();
+}
+
+// Mark as unread
+function markAsUnread(notifId) {
+    const notif = state.notifications.find(n => n.id === notifId);
+    if (!notif) return;
+
+    notif.isUnread = true;
+    state.unreadIds.add(notifId);
+    
+    saveLocalState();
+    renderHome(); // Update badge counts
+    showToast('Marked as unread!');
+    
+    closeContextMenu();
 }
 
 // Go home
@@ -241,6 +366,8 @@ function confirmClearHistory() {
     if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
         state.notifications = [];
         state.seenIds.clear();
+        state.pinnedIds.clear();
+        state.unreadIds.clear();
         saveLocalState();
         renderHome();
         closeSettings();
@@ -260,8 +387,16 @@ function openHistory() {
             </div>
         `;
     } else {
-        container.innerHTML = state.notifications.slice().reverse().map(notif => `
-            <div class="notification-card">
+        const sortedNotifs = sortNotifications([...state.notifications]);
+        container.innerHTML = sortedNotifs.map(notif => `
+            <div class="notification-card" data-id="${notif.id}"
+                 onmousedown="handleLongPressStart(event, '${notif.id}')"
+                 ontouchstart="handleLongPressStart(event, '${notif.id}')"
+                 onmouseup="handleLongPressEnd()"
+                 ontouchend="handleLongPressEnd()"
+                 onmouseleave="handleLongPressEnd()"
+                 ontouchcancel="handleLongPressEnd()">
+                ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
                 <div class="notification-header">
                     <div class="shop-name">🏪 ${notif.shop_name}</div>
                     <div class="notification-time">🕐 ${formatDate(notif.timestamp)}</div>
@@ -294,10 +429,11 @@ function openSearch() {
 function closeSearch() {
     document.getElementById('searchModal').classList.add('hidden');
     document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '';
 }
 
 document.getElementById('searchInput')?.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase();
+    const query = e.target.value.toLowerCase().trim();
     const results = document.getElementById('searchResults');
     
     if (!query) {
@@ -305,10 +441,22 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
         return;
     }
 
-    const filtered = state.notifications.filter(notif =>
-        notif.product_name.toLowerCase().includes(query) ||
-        notif.shop_name.toLowerCase().includes(query)
-    );
+    let filtered = [];
+
+    // Check for special commands
+    if (query === '/unread') {
+        filtered = state.notifications.filter(notif => 
+            !state.seenIds.has(notif.id) || notif.isUnread
+        );
+    } else if (query === '/pinned') {
+        filtered = state.notifications.filter(notif => notif.isPinned);
+    } else {
+        // Normal search
+        filtered = state.notifications.filter(notif =>
+            notif.product_name.toLowerCase().includes(query) ||
+            notif.shop_name.toLowerCase().includes(query)
+        );
+    }
 
     if (filtered.length === 0) {
         results.innerHTML = `
@@ -318,8 +466,16 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
             </div>
         `;
     } else {
-        results.innerHTML = filtered.map(notif => `
-            <div class="notification-card">
+        const sortedFiltered = sortNotifications(filtered);
+        results.innerHTML = sortedFiltered.map(notif => `
+            <div class="notification-card" data-id="${notif.id}"
+                 onmousedown="handleLongPressStart(event, '${notif.id}')"
+                 ontouchstart="handleLongPressStart(event, '${notif.id}')"
+                 onmouseup="handleLongPressEnd()"
+                 ontouchend="handleLongPressEnd()"
+                 onmouseleave="handleLongPressEnd()"
+                 ontouchcancel="handleLongPressEnd()">
+                ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
                 <div class="notification-header">
                     <div class="shop-name">🏪 ${notif.shop_name}</div>
                     <div class="notification-time">🕐 ${formatDate(notif.timestamp)}</div>
@@ -397,7 +553,9 @@ function saveLocalState() {
     try {
         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
             notifications: state.notifications,
-            seenIds: Array.from(state.seenIds)
+            seenIds: Array.from(state.seenIds),
+            pinnedIds: Array.from(state.pinnedIds),
+            unreadIds: Array.from(state.unreadIds)
         }));
     } catch (e) {
         console.error('Failed to save state:', e);
@@ -411,6 +569,8 @@ function loadLocalState() {
             const data = JSON.parse(saved);
             state.notifications = data.notifications || [];
             state.seenIds = new Set(data.seenIds || []);
+            state.pinnedIds = new Set(data.pinnedIds || []);
+            state.unreadIds = new Set(data.unreadIds || []);
         }
     } catch (e) {
         console.error('Failed to load state:', e);
