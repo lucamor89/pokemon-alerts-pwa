@@ -720,3 +720,35 @@ function loadLocalState() {
         console.error('Failed to load state:', e);
     }
 }
+
+// Service Worker Registration with Force Update
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/pokemon-alerts-pwa/service-worker.js')
+        .then(registration => {
+            console.log('[App] Service Worker registered');
+            
+            // Force check for updates on every page load
+            registration.update();
+            
+            // Listen for updates
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('[App] New service worker found, installing...');
+                
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('[App] New version available, reloading...');
+                        // Tell the new SW to take over immediately
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                });
+            });
+            
+            // Reload when new SW takes control
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('[App] New service worker activated, reloading page...');
+                window.location.reload();
+            });
+        })
+        .catch(err => console.error('[App] Service Worker registration failed:', err));
+}
