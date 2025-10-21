@@ -1,5 +1,5 @@
 // VERSION: Change this number when you update the app!
-const VERSION = '1.0.2';
+const VERSION = '1.0.7';
 const CACHE_NAME = `pokemon-alerts-${VERSION}`;
 
 // Files to cache for offline use
