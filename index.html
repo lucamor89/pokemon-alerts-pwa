@@ -13,8 +13,8 @@
 </head>
 <body>
     <!-- Context Menu (Long-Press) -->
-    <div id="contextMenu" class="context-menu hidden">
-        <div class="context-menu-content">
+    <div id="contextMenu" class="context-menu hidden" onclick="closeContextMenu()">
+        <div class="context-menu-content" onclick="event.stopPropagation()">
             <div class="context-menu-header">
                 <h3 id="contextMenuTitle">Options</h3>
             </div>
