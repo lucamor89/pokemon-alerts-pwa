@@ -184,6 +184,27 @@ body {
     background-color: #374151;
 }
 
+/* Search result and history cards - always clickable, no long-press */
+.notification-card.search-result {
+    cursor: pointer;
+    -webkit-touch-callout: default;
+    transition: all 0.2s;
+}
+
+.notification-card.search-result:active {
+    background-color: #374151;
+    transform: scale(0.98);
+}
+
+/* Tap hint for search/history results */
+.tap-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    text-align: center;
+    font-style: italic;
+}
+
 /* Pin Indicator */
 .pin-indicator {
     background-color: var(--pin-indicator);
