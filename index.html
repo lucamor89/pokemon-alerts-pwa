@@ -88,6 +88,9 @@
                     <h1 class="app-title">Pokémon Stock Alerts</h1>
                 </div>
                 <div class="header-right">
+                    <div id="headerSpinner" class="header-spinner hidden">
+                        <div class="spinner-small"></div>
+                    </div>
                     <button class="icon-btn" onclick="openSearch()">🔍</button>
                     <button class="icon-btn" onclick="openHistory()">⏰</button>
                 </div>
@@ -107,6 +110,9 @@
                     <h1 class="app-title" id="categoryTitle">Category</h1>
                 </div>
                 <div class="header-right">
+                    <div id="headerSpinner" class="header-spinner hidden">
+                        <div class="spinner-small"></div>
+                    </div>
                     <button class="icon-btn" onclick="openSearch()">🔍</button>
                     <button class="icon-btn" onclick="openHistory()">⏰</button>
                 </div>
@@ -116,12 +122,6 @@
                 <!-- Notifications will be populated here -->
             </div>
         </div>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="loading hidden">
-        <div class="spinner"></div>
-        <p>Loading notifications...</p>
     </div>
 
     <!-- Toast Notification -->
