@@ -245,13 +245,7 @@ function renderCategoryFeed(category) {
     items = sortNotifications(items);
 
     container.innerHTML = items.map(notif => `
-        <div class="notification-card" data-id="${notif.id}" 
-             onmousedown="handleLongPressStart(event, '${notif.id}')"
-             ontouchstart="handleLongPressStart(event, '${notif.id}')"
-             onmouseup="handleLongPressEnd()"
-             ontouchend="handleLongPressEnd()"
-             onmouseleave="handleLongPressEnd()"
-             ontouchcancel="handleLongPressEnd()">
+        <div class="notification-card" data-id="${notif.id}">
             ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
             <div class="notification-header">
                 <div class="shop-name">🏪 ${notif.shop_name}</div>
@@ -267,6 +261,36 @@ function renderCategoryFeed(category) {
             </a>
         </div>
     `).join('');
+    
+    // Add long-press handlers and link click handlers
+    container.querySelectorAll('.notification-card').forEach(card => {
+        const notifId = card.getAttribute('data-id');
+        
+        // Long-press for context menu
+        card.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('a')) {
+                handleLongPressStart(e, notifId);
+            }
+        });
+        card.addEventListener('touchstart', (e) => {
+            if (!e.target.closest('a')) {
+                handleLongPressStart(e, notifId);
+            }
+        });
+        card.addEventListener('mouseup', handleLongPressEnd);
+        card.addEventListener('touchend', handleLongPressEnd);
+        card.addEventListener('mouseleave', handleLongPressEnd);
+        card.addEventListener('touchcancel', handleLongPressEnd);
+        
+        // Ensure links work
+        const link = card.querySelector('.view-product-btn');
+        if (link) {
+            link.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleLongPressEnd(); // Cancel any long-press
+            });
+        }
+    });
 }
 
 // Sort notifications: Pinned first, then by date
@@ -323,16 +347,23 @@ function showContextMenu(notifId) {
         <div class="context-option" onclick="markAsUnread('${notifId}')">
             👁️ Mark as Unread
         </div>
-        <div class="context-option cancel" onclick="closeContextMenu()">
-            ❌ Cancel
-        </div>
     `;
 
     menu.classList.remove('hidden');
+    
+    // Add history state for back button handling
+    window.history.pushState({ contextMenuOpen: true }, '');
 }
 
 function closeContextMenu() {
-    document.getElementById('contextMenu').classList.add('hidden');
+    const menu = document.getElementById('contextMenu');
+    if (!menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+        // Remove the history state if it was added by context menu
+        if (window.history.state && window.history.state.contextMenuOpen) {
+            window.history.back();
+        }
+    }
 }
 
 // Toggle pin
@@ -426,7 +457,7 @@ function openHistory() {
     } else {
         const sortedNotifs = sortNotifications([...state.notifications]);
         container.innerHTML = sortedNotifs.map(notif => `
-            <div class="notification-card search-result" onclick="navigateToNotification('${notif.id}')">
+            <div class="notification-card search-result" data-navigate-id="${notif.id}">
                 ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
                 <div class="notification-header">
                     <div class="shop-name">🏪 ${notif.shop_name}</div>
@@ -440,6 +471,16 @@ function openHistory() {
                 <div class="tap-hint">👆 Tap to view in category</div>
             </div>
         `).join('');
+        
+        // Add click listeners to history cards
+        container.querySelectorAll('.search-result').forEach(card => {
+            card.addEventListener('click', function(e) {
+                const notifId = this.getAttribute('data-navigate-id');
+                if (notifId) {
+                    navigateToNotification(notifId);
+                }
+            });
+        });
     }
     
     document.getElementById('historyModal').classList.remove('hidden');
@@ -497,7 +538,7 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
     } else {
         const sortedFiltered = sortNotifications(filtered);
         results.innerHTML = sortedFiltered.map(notif => `
-            <div class="notification-card search-result" onclick="navigateToNotification('${notif.id}')">
+            <div class="notification-card search-result" data-navigate-id="${notif.id}">
                 ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
                 <div class="notification-header">
                     <div class="shop-name">🏪 ${notif.shop_name}</div>
@@ -511,12 +552,29 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
                 <div class="tap-hint">👆 Tap to view in category</div>
             </div>
         `).join('');
+        
+        // Add click listeners to search result cards
+        results.querySelectorAll('.search-result').forEach(card => {
+            card.addEventListener('click', function(e) {
+                const notifId = this.getAttribute('data-navigate-id');
+                if (notifId) {
+                    navigateToNotification(notifId);
+                }
+            });
+        });
     }
 });
 
 // Back button handling
 function setupBackButton() {
     window.addEventListener('popstate', (e) => {
+        // Check if context menu is open
+        const contextMenu = document.getElementById('contextMenu');
+        if (contextMenu && !contextMenu.classList.contains('hidden')) {
+            closeContextMenu();
+            return;
+        }
+        
         if (state.currentCategory) {
             goHome();
         } else {
