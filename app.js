@@ -171,7 +171,7 @@ function renderHome() {
 }
 
 // Open category
-function openCategory(category) {
+function openCategory(category, scrollToNotifId = null) {
     state.currentCategory = category;
     
     // Mark all in this category as seen (but respect unread status)
@@ -189,6 +189,38 @@ function openCategory(category) {
 
     renderCategoryFeed(category);
     switchScreen('categoryScreen');
+    
+    // Scroll to specific notification if requested
+    if (scrollToNotifId) {
+        setTimeout(() => {
+            const element = document.querySelector(`[data-id="${scrollToNotifId}"]`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Highlight briefly
+                element.style.transition = 'background-color 0.5s';
+                element.style.backgroundColor = '#374151';
+                setTimeout(() => {
+                    element.style.backgroundColor = '';
+                }, 1000);
+            }
+        }, 100);
+    }
+}
+
+// Navigate to notification from search/history
+function navigateToNotification(notifId) {
+    const notif = state.notifications.find(n => n.id === notifId);
+    if (!notif) return;
+    
+    // Find which category this notification belongs to
+    const category = detectProductType(notif.product_name);
+    
+    // Close any open modals
+    closeSearch();
+    closeHistory();
+    
+    // Open the category and scroll to the notification
+    openCategory(category, notifId);
 }
 
 // Render category feed
@@ -270,6 +302,11 @@ function handleLongPressEnd() {
 function showContextMenu(notifId) {
     const notif = state.notifications.find(n => n.id === notifId);
     if (!notif) return;
+
+    // Haptic feedback (vibration)
+    if ('vibrate' in navigator) {
+        navigator.vibrate(50); // 50ms vibration
+    }
 
     const menu = document.getElementById('contextMenu');
     const menuTitle = document.getElementById('contextMenuTitle');
@@ -389,13 +426,7 @@ function openHistory() {
     } else {
         const sortedNotifs = sortNotifications([...state.notifications]);
         container.innerHTML = sortedNotifs.map(notif => `
-            <div class="notification-card" data-id="${notif.id}"
-                 onmousedown="handleLongPressStart(event, '${notif.id}')"
-                 ontouchstart="handleLongPressStart(event, '${notif.id}')"
-                 onmouseup="handleLongPressEnd()"
-                 ontouchend="handleLongPressEnd()"
-                 onmouseleave="handleLongPressEnd()"
-                 ontouchcancel="handleLongPressEnd()">
+            <div class="notification-card search-result" onclick="navigateToNotification('${notif.id}')">
                 ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
                 <div class="notification-header">
                     <div class="shop-name">🏪 ${notif.shop_name}</div>
@@ -406,9 +437,7 @@ function openHistory() {
                     ${notif.price ? `<span>💰 ${notif.price}</span>` : ''}
                     ${notif.is_new ? '<span class="new-badge">NEW PRODUCT!</span>' : ''}
                 </div>
-                <a href="${notif.product_link}" class="view-product-btn" target="_blank" rel="noopener">
-                    🔗 View Product
-                </a>
+                <div class="tap-hint">👆 Tap to view in category</div>
             </div>
         `).join('');
     }
@@ -468,13 +497,7 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
     } else {
         const sortedFiltered = sortNotifications(filtered);
         results.innerHTML = sortedFiltered.map(notif => `
-            <div class="notification-card" data-id="${notif.id}"
-                 onmousedown="handleLongPressStart(event, '${notif.id}')"
-                 ontouchstart="handleLongPressStart(event, '${notif.id}')"
-                 onmouseup="handleLongPressEnd()"
-                 ontouchend="handleLongPressEnd()"
-                 onmouseleave="handleLongPressEnd()"
-                 ontouchcancel="handleLongPressEnd()">
+            <div class="notification-card search-result" onclick="navigateToNotification('${notif.id}')">
                 ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
                 <div class="notification-header">
                     <div class="shop-name">🏪 ${notif.shop_name}</div>
@@ -485,9 +508,7 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
                     ${notif.price ? `<span>💰 ${notif.price}</span>` : ''}
                     ${notif.is_new ? '<span class="new-badge">NEW PRODUCT!</span>' : ''}
                 </div>
-                <a href="${notif.product_link}" class="view-product-btn" target="_blank" rel="noopener">
-                    🔗 View Product
-                </a>
+                <div class="tap-hint">👆 Tap to view in category</div>
             </div>
         `).join('');
     }
