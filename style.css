@@ -52,11 +52,12 @@ body {
     transform: translateX(100%);
     transition: transform 0.3s ease, opacity 0.3s ease;
     pointer-events: none;
+    overflow: hidden;
 }
 
 .screen.active {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) !important;
     pointer-events: auto;
 }
 
@@ -110,8 +111,10 @@ body {
 .content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     padding: 16px;
+    width: 100%;
 }
 
 /* Category Card */
