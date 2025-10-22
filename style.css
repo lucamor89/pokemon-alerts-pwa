@@ -246,7 +246,7 @@ body {
 .product-name {
     font-size: 16px;
     font-weight: 600;
-    color: var(--accent);
+    color: var(--text-primary); /* Changed from var(--accent) - no longer looks clickable */
     margin-bottom: 8px;
     line-height: 1.4;
 }
@@ -279,7 +279,7 @@ body {
     gap: 4px;
     color: var(--accent);
     text-decoration: none;
-    font-size: 14px;
+    font-size: 16px; /* Enlarged from 14px to match product title */
     padding: 8px 0;
     transition: opacity 0.2s;
 }
