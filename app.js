@@ -749,3 +749,13 @@ if ('serviceWorker' in navigator) {
         })
         .catch(err => console.error('[App] Service Worker registration failed:', err));
 }
+
+// Force external browser for shop links (PWA fix)
+document.addEventListener('click', (e) => {
+    const link = e.target.closest('a.view-product-btn');
+    if (link && link.href) {
+        e.preventDefault();
+        // Force open in external browser (not in-app WebView)
+        window.open(link.href, '_system') || window.open(link.href, '_blank');
+    }
+}, false);
