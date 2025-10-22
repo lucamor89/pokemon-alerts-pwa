@@ -65,7 +65,7 @@
                     <span>🔔 Push Notifications</span>
                     <span class="setting-value">Coming Soon</span>
                 </div>
-                <div class="setting-item" onclick="confirmClearHistory()">
+                <div class="setting-item" onclick="clearHistory()">
                     <span>🗑️ Clear History</span>
                     <span class="setting-value">→</span>
                 </div>
@@ -73,19 +73,6 @@
                     <span>ℹ️ Version</span>
                     <span class="setting-value">1.0.3</span>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- History Modal -->
-    <div id="historyModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>⏰ History</h2>
-                <button class="close-btn" onclick="closeHistory()">✕</button>
-            </div>
-            <div class="modal-body" id="historyContent">
-                <!-- History items will be populated here -->
             </div>
         </div>
     </div>
@@ -117,7 +104,6 @@
                         <div class="spinner-small"></div>
                     </div>
                     <button class="icon-btn" onclick="openSearch()">🔍</button>
-                    <button class="icon-btn" onclick="openHistory()">⏰</button>
                 </div>
             </header>
 
@@ -139,7 +125,6 @@
                         <div class="spinner-small"></div>
                     </div>
                     <button class="icon-btn" onclick="openSearch()">🔍</button>
-                    <button class="icon-btn" onclick="openHistory()">⏰</button>
                 </div>
             </header>
 
