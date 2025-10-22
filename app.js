@@ -214,7 +214,7 @@ function openCategory(category, scrollToNotifId = null) {
     }
 }
 
-// Navigate to notification from search/history
+// Navigate to notification from search
 function navigateToNotification(notifId) {
     const notif = state.notifications.find(n => n.id === notifId);
     if (!notif) return;
@@ -224,7 +224,6 @@ function navigateToNotification(notifId) {
     
     // Close any open modals
     closeSearch();
-    closeHistory();
     
     // Open the category and scroll to the notification
     openCategory(category, notifId);
@@ -472,64 +471,27 @@ function closeSettings() {
     document.getElementById('settingsModal').classList.add('hidden');
 }
 
-function confirmClearHistory() {
-    if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
-        state.notifications = [];
-        state.seenIds.clear();
-        state.pinnedIds.clear();
-        state.unreadIds.clear();
+// Clear History (Manual) - Removes read & unpinned notifications
+function clearHistory() {
+    if (confirm('Are you sure you want to remove all read notifications? This action can\'t be undone.')) {
+        const before = state.notifications.length;
+        
+        // Keep only: Pinned items OR Unread items
+        state.notifications = state.notifications.filter(notif => {
+            return notif.isPinned || notif.isUnread;
+        });
+        
+        // Clean up orphaned IDs in seenIds (remove any that don't exist in notifications anymore)
+        const notifIds = new Set(state.notifications.map(n => n.id));
+        state.seenIds = new Set([...state.seenIds].filter(id => notifIds.has(id)));
+        
+        const removed = before - state.notifications.length;
+        
         saveLocalState();
         renderHome();
         closeSettings();
-        showToast('History cleared');
+        showToast(`✓ ${removed} notification${removed !== 1 ? 's' : ''} removed`);
     }
-}
-
-// History
-function openHistory() {
-    const container = document.getElementById('historyContent');
-    
-    if (state.notifications.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">⏰</div>
-                <div class="empty-state-text">No notification history</div>
-            </div>
-        `;
-    } else {
-        const sortedNotifs = sortNotifications([...state.notifications]);
-        container.innerHTML = sortedNotifs.map(notif => `
-            <div class="notification-card search-result" data-navigate-id="${notif.id}">
-                ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
-                <div class="notification-header">
-                    <div class="shop-name">🏪 ${notif.shop_name}</div>
-                    <div class="notification-time">🕐 ${formatDate(notif.timestamp)}</div>
-                </div>
-                <div class="product-name">${notif.product_name}</div>
-                <div class="notification-info">
-                    ${notif.price ? `<span>💰 ${notif.price}</span>` : ''}
-                    ${notif.is_new ? '<span class="new-badge">NEW PRODUCT!</span>' : ''}
-                </div>
-                <div class="tap-hint">👆 Tap to view in category</div>
-            </div>
-        `).join('');
-        
-        // Add click listeners to history cards
-        container.querySelectorAll('.search-result').forEach(card => {
-            card.addEventListener('click', function(e) {
-                const notifId = this.getAttribute('data-navigate-id');
-                if (notifId) {
-                    navigateToNotification(notifId);
-                }
-            });
-        });
-    }
-    
-    document.getElementById('historyModal').classList.remove('hidden');
-}
-
-function closeHistory() {
-    document.getElementById('historyModal').classList.add('hidden');
 }
 
 // Search
@@ -712,9 +674,58 @@ function loadLocalState() {
             state.seenIds = new Set(data.seenIds || []);
             state.pinnedIds = new Set(data.pinnedIds || []);
             state.unreadIds = new Set(data.unreadIds || []);
+            
+            // Auto-cleanup: Run once per day
+            autoCleanupOldNotifications();
         }
     } catch (e) {
         console.error('Failed to load state:', e);
+    }
+}
+
+// Auto-cleanup: Remove notifications older than 3 months (except pinned/unread)
+function autoCleanupOldNotifications() {
+    const LAST_CLEANUP_KEY = 'pokemon_last_cleanup';
+    const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000; // 90 days in milliseconds
+    
+    try {
+        const lastCleanup = localStorage.getItem(LAST_CLEANUP_KEY);
+        const today = new Date().toDateString();
+        
+        // Only run once per day
+        if (lastCleanup === today) {
+            return;
+        }
+        
+        const before = state.notifications.length;
+        const cutoffDate = new Date(Date.now() - THREE_MONTHS_MS);
+        
+        // Keep: Pinned items, Unread items, OR items newer than 3 months
+        state.notifications = state.notifications.filter(notif => {
+            if (notif.isPinned || notif.isUnread) {
+                return true; // Always keep pinned and unread
+            }
+            
+            const notifDate = new Date(notif.timestamp);
+            return notifDate > cutoffDate; // Keep if newer than 3 months
+        });
+        
+        // Clean up orphaned IDs
+        const notifIds = new Set(state.notifications.map(n => n.id));
+        state.seenIds = new Set([...state.seenIds].filter(id => notifIds.has(id)));
+        
+        const removed = before - state.notifications.length;
+        
+        if (removed > 0) {
+            console.log(`[Auto-cleanup] Removed ${removed} old notification(s)`);
+            saveLocalState();
+        }
+        
+        // Mark cleanup as done for today
+        localStorage.setItem(LAST_CLEANUP_KEY, today);
+        
+    } catch (e) {
+        console.error('Auto-cleanup failed:', e);
     }
 }
 
