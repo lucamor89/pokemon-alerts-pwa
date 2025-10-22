@@ -750,12 +750,25 @@ if ('serviceWorker' in navigator) {
         .catch(err => console.error('[App] Service Worker registration failed:', err));
 }
 
-// Force external browser for shop links (PWA fix)
+// Force external browser for shop links (PWA fix - Android specific)
 document.addEventListener('click', (e) => {
     const link = e.target.closest('a.view-product-btn');
     if (link && link.href) {
         e.preventDefault();
-        // Force open in external browser (not in-app WebView)
-        window.open(link.href, '_system') || window.open(link.href, '_blank');
+        e.stopPropagation();
+        
+        const url = link.href;
+        
+        // For Android: Create an intent URL that forces external browser
+        // This bypasses the PWA's in-app browser
+        const intentUrl = `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
+        
+        // Create a temporary link and click it
+        const tempLink = document.createElement('a');
+        tempLink.href = intentUrl;
+        tempLink.style.display = 'none';
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
     }
-}, false);
+}, true); // Use capture phase
