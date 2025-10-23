@@ -98,3 +98,64 @@ self.addEventListener('message', event => {
     self.skipWaiting();
   }
 });
+// Push notification received
+self.addEventListener('push', event => {
+  console.log('[SW] Push notification received');
+  
+  let data = {
+    title: 'Pokémon Stock Alert',
+    body: 'New products available!',
+    icon: '/pokemon-alerts-pwa/icon-192.png',
+    badge: '/pokemon-alerts-pwa/icon-192.png',
+    tag: 'pokemon-alert',
+    requireInteraction: false
+  };
+  
+  // If push has JSON data, use it
+  if (event.data) {
+    try {
+      const pushData = event.data.json();
+      data = { ...data, ...pushData };
+    } catch (e) {
+      data.body = event.data.text();
+    }
+  }
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon,
+      badge: data.badge,
+      tag: data.tag,
+      requireInteraction: data.requireInteraction,
+      vibrate: [200, 100, 200],
+      data: {
+        url: '/pokemon-alerts-pwa/'
+      }
+    })
+  );
+});
+
+// Notification clicked
+self.addEventListener('notificationclick', event => {
+  console.log('[SW] Notification clicked');
+  
+  event.notification.close();
+  
+  // Open or focus the app
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        // If app is already open, focus it
+        for (const client of clientList) {
+          if (client.url.includes('/pokemon-alerts-pwa/') && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // Otherwise, open new window
+        if (clients.openWindow) {
+          return clients.openWindow(event.notification.data.url || '/pokemon-alerts-pwa/');
+        }
+      })
+  );
+});
