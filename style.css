@@ -20,6 +20,22 @@
     --pin-indicator: #fbbf24; /* Gold for pin indicator */
 }
 
+/* Light Mode */
+body.light-mode {
+    --bg-primary: #f7fafc;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --accent: #3182ce;
+    --border: #e2e8f0;
+    --red-badge: #fc8181;
+    --success: #48bb78;
+    --warning: #ed8936;
+    --new-badge: #ecc94b; /* Slightly darker yellow for light mode */
+    --pin-indicator: #d69e2e; /* Darker gold for light mode */
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background-color: var(--bg-primary);
@@ -246,7 +262,7 @@ body {
 .product-name {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-primary); /* Changed from var(--accent) - no longer looks clickable */
+    color: var(--accent);
     margin-bottom: 8px;
     line-height: 1.4;
 }
@@ -279,7 +295,7 @@ body {
     gap: 4px;
     color: var(--accent);
     text-decoration: none;
-    font-size: 16px; /* Enlarged from 14px to match product title */
+    font-size: 14px;
     padding: 8px 0;
     transition: opacity 0.2s;
 }
@@ -525,4 +541,59 @@ body {
     .content {
         padding-bottom: max(16px, env(safe-area-inset-bottom));
     }
+}
+
+/* Theme Toggle Switch */
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4a5568;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.theme-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .theme-slider {
+    background-color: var(--accent);
+}
+
+input:checked + .theme-slider:before {
+    transform: translateX(24px);
+}
+
+/* Light mode specific adjustments */
+body.light-mode .theme-slider {
+    background-color: #cbd5e0;
+}
+
+body.light-mode input:checked + .theme-slider {
+    background-color: var(--accent);
 }
