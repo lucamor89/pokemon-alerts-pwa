@@ -6,7 +6,7 @@ const CONFIG = {
     JSONBIN_MYTHIC_URL: 'https://api.jsonbin.io/v3/b/68ed7d3e43b1c97be9665da4',
     REFRESH_INTERVAL: 60000, // 60 seconds
     STORAGE_KEY: 'pokemon_stock_alerts',
-    VAPID_PUBLIC_KEY: 'BIbQyAj8Aoma4B5dqJcs89To6JI3O38t5uFzWQVGVil4F3Bxw0DBYdnKKCLlznFmtC-Ob6bPynMC-K-I3S1zSz8'
+    // VAPID_PUBLIC_KEY: 'YOUR_VAPID_PUBLIC_KEY_HERE' // TODO: Generate VAPID keys for push notifications
 };
 
 // Lucide Icons - SVG Helper Functions
@@ -652,12 +652,22 @@ async function subscribeToPush() {
             
             console.log('[Push] Subscribed:', subscription.endpoint);
             
-            // TODO: Send subscription to your backend server
-            // await fetch('/api/subscribe', {
-            //     method: 'POST',
-            //     body: JSON.stringify(subscription),
-            //     headers: { 'Content-Type': 'application/json' }
-            // });
+            // Send subscription to backend server
+            try {
+                const response = await fetch('https://pokbot-stock.onrender.com/api/subscribe', {
+                    method: 'POST',
+                    body: JSON.stringify(subscription),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    console.log('[Push] Subscription sent to backend');
+                } else {
+                    console.error('[Push] Failed to send subscription to backend:', response.status);
+                }
+            } catch (error) {
+                console.error('[Push] Error sending subscription to backend:', error);
+            }
         }
         
         return subscription;
@@ -677,12 +687,22 @@ async function unsubscribeFromPush() {
             await subscription.unsubscribe();
             console.log('[Push] Unsubscribed');
             
-            // TODO: Remove subscription from your backend server
-            // await fetch('/api/unsubscribe', {
-            //     method: 'POST',
-            //     body: JSON.stringify({ endpoint: subscription.endpoint }),
-            //     headers: { 'Content-Type': 'application/json' }
-            // });
+            // Remove subscription from backend server
+            try {
+                const response = await fetch('https://pokbot-stock.onrender.com/api/unsubscribe', {
+                    method: 'POST',
+                    body: JSON.stringify({ endpoint: subscription.endpoint }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    console.log('[Push] Subscription removed from backend');
+                } else {
+                    console.error('[Push] Failed to remove subscription from backend:', response.status);
+                }
+            } catch (error) {
+                console.error('[Push] Error removing subscription from backend:', error);
+            }
         }
     } catch (error) {
         console.error('[Push] Unsubscribe failed:', error);
