@@ -57,12 +57,15 @@
                 <button class="close-btn" onclick="closeSettings()">✕</button>
             </div>
             <div class="modal-body">
-                <div class="setting-item" onclick="toggleTheme()">
+                <div class="setting-item">
                     <span>Theme</span>
-                    <label class="theme-switch">
-                        <input type="checkbox" id="themeToggle">
-                        <span class="theme-slider"></span>
-                    </label>
+                    <div class="theme-control">
+                        <span id="themeLabel" class="theme-label">Dark</span>
+                        <label class="theme-switch" onclick="toggleTheme()">
+                            <input type="checkbox" id="themeToggle">
+                            <span class="theme-slider"></span>
+                        </label>
+                    </div>
                 </div>
                 <div class="setting-item disabled">
                     <span>🔔 Push Notifications</span>
