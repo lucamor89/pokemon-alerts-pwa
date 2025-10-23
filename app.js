@@ -56,14 +56,29 @@ async function fetchAllNotifications() {
     showLoading(true);
     
     try {
-        const [badger, brotherhood, mythic] = await Promise.all([
+        // Use allSettled instead of all - shows partial results even if some shops fail
+        const results = await Promise.allSettled([
             fetchFromJSONBin(CONFIG.JSONBIN_BADGER_URL, 'Badger Badger'),
             fetchFromJSONBin(CONFIG.JSONBIN_BROTHERHOOD_URL, 'The Brotherhood Games'),
             fetchFromJSONBin(CONFIG.JSONBIN_MYTHIC_URL, 'Mythic Goblin')
         ]);
 
-        // Combine and convert to notification format
-        const allProducts = [...badger, ...brotherhood, ...mythic];
+        // Extract successful results
+        const allProducts = [];
+        const failedShops = [];
+        
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                allProducts.push(...result.value);
+            } else {
+                // Track which shop failed
+                const shopNames = ['Badger Badger', 'The Brotherhood Games', 'Mythic Goblin'];
+                failedShops.push(shopNames[index]);
+                console.error(`Failed to load ${shopNames[index]}:`, result.reason);
+            }
+        });
+
+        // Convert to notification format
         state.notifications = allProducts.map(item => {
             const id = generateId(item.name, item.shop);
             return {
@@ -81,7 +96,19 @@ async function fetchAllNotifications() {
 
         saveLocalState();
         renderHome();
+        
+        // Show warning if some shops failed (but don't block showing successful results)
+        if (failedShops.length > 0) {
+            if (failedShops.length === 3) {
+                // All shops failed - show error
+                showToast('⚠️ Failed to load notifications - check connection');
+            } else {
+                // Partial failure - show warning
+                showToast(`⚠️ Could not load: ${failedShops.join(', ')}`);
+            }
+        }
         // No toast on success - silent background update
+        
     } catch (error) {
         console.error('Error fetching notifications:', error);
         showToast('⚠️ Failed to load notifications');
@@ -90,22 +117,50 @@ async function fetchAllNotifications() {
     }
 }
 
-// Fetch from JSONBin
-async function fetchFromJSONBin(url, shopName) {
-    const response = await fetch(url, {
-        headers: {
-            'X-Master-Key': CONFIG.JSONBIN_KEY
-        }
-    });
-
-    if (!response.ok) {
-        throw new Error(`Failed to fetch from ${shopName}`);
-    }
-
-    const data = await response.json();
-    const products = data.record.products || [];
+// Fetch from JSONBin with timeout and retry
+async function fetchFromJSONBin(url, shopName, retries = 3) {
+    const TIMEOUT_MS = 10000; // 10 second timeout
     
-    return products;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            // Create timeout promise
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timeout')), TIMEOUT_MS)
+            );
+            
+            // Race between fetch and timeout
+            const fetchPromise = fetch(url, {
+                headers: {
+                    'X-Master-Key': CONFIG.JSONBIN_KEY
+                }
+            });
+            
+            const response = await Promise.race([fetchPromise, timeoutPromise]);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            const products = data.record.products || [];
+            
+            console.log(`[${shopName}] Loaded ${products.length} products (attempt ${attempt})`);
+            return products;
+            
+        } catch (error) {
+            console.warn(`[${shopName}] Attempt ${attempt}/${retries} failed:`, error.message);
+            
+            // If last attempt, throw error
+            if (attempt === retries) {
+                throw new Error(`${shopName}: ${error.message}`);
+            }
+            
+            // Wait before retrying (exponential backoff: 1s, 2s, 4s)
+            const delay = Math.pow(2, attempt - 1) * 1000;
+            console.log(`[${shopName}] Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
 }
 
 // Detect product type
