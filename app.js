@@ -532,16 +532,23 @@ function closeSettings() {
 }
 
 // Theme Toggle (Dark/Light Mode)
-function toggleTheme() {
+function toggleTheme(event) {
+    // Prevent event from bubbling if clicked on label
+    if (event) {
+        event.stopPropagation();
+    }
+    
     const body = document.body;
     const toggle = document.getElementById('themeToggle');
+    const label = document.getElementById('themeLabel');
     
     // Toggle light mode class
     body.classList.toggle('light-mode');
     
-    // Update checkbox state
+    // Update checkbox state and label
     const isLightMode = body.classList.contains('light-mode');
     toggle.checked = isLightMode;
+    label.textContent = isLightMode ? 'Light' : 'Dark';
     
     // Save preference to localStorage
     localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
@@ -551,14 +558,17 @@ function toggleTheme() {
 function loadThemePreference() {
     const savedTheme = localStorage.getItem('theme');
     const toggle = document.getElementById('themeToggle');
+    const label = document.getElementById('themeLabel');
     
     // Default to dark mode if no preference saved
     if (savedTheme === 'light') {
         document.body.classList.add('light-mode');
         if (toggle) toggle.checked = true;
+        if (label) label.textContent = 'Light';
     } else {
         document.body.classList.remove('light-mode');
         if (toggle) toggle.checked = false;
+        if (label) label.textContent = 'Dark';
     }
 }
 
