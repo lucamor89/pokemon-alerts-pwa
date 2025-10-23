@@ -6,7 +6,7 @@ const CONFIG = {
     JSONBIN_MYTHIC_URL: 'https://api.jsonbin.io/v3/b/68ed7d3e43b1c97be9665da4',
     REFRESH_INTERVAL: 60000, // 60 seconds
     STORAGE_KEY: 'pokemon_stock_alerts',
-    // VAPID_PUBLIC_KEY: 'YOUR_VAPID_PUBLIC_KEY_HERE' // TODO: Generate VAPID keys for push notifications
+    VAPID_PUBLIC_KEY: 'BIbQyAj8Aoma4B5dqJcs89To6JI3O38t5uFzWQVGVil4F3Bxw0DBYdnKKCLlznFmtC-Ob6bPynMC-K-I3S1zSz8'
 };
 
 // Lucide Icons - SVG Helper Functions
