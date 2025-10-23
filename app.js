@@ -532,23 +532,22 @@ function closeSettings() {
 }
 
 // Theme Toggle (Dark/Light Mode)
-function toggleTheme(event) {
-    // Prevent event from bubbling if clicked on label
-    if (event) {
-        event.stopPropagation();
-    }
-    
+function toggleTheme() {
     const body = document.body;
     const toggle = document.getElementById('themeToggle');
     const label = document.getElementById('themeLabel');
     
-    // Toggle light mode class
-    body.classList.toggle('light-mode');
+    // Get checkbox state (it's already toggled by the user click)
+    const isLightMode = toggle.checked;
     
-    // Update checkbox state and label
-    const isLightMode = body.classList.contains('light-mode');
-    toggle.checked = isLightMode;
-    label.textContent = isLightMode ? 'Light' : 'Dark';
+    // Apply theme
+    if (isLightMode) {
+        body.classList.add('light-mode');
+        label.textContent = 'Light';
+    } else {
+        body.classList.remove('light-mode');
+        label.textContent = 'Dark';
+    }
     
     // Save preference to localStorage
     localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
