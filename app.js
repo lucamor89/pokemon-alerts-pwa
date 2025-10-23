@@ -8,6 +8,26 @@ const CONFIG = {
     STORAGE_KEY: 'pokemon_stock_alerts'
 };
 
+// Lucide Icons - SVG Helper Functions
+const icons = {
+    settings: '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+    search: '<svg class="icon-svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+    store: '<svg class="icon-svg" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>',
+    clock: '<svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    poundSterling: '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 7c0-5.333-8-5.333-8 0"/><path d="M10 7v14"/><path d="M6 21h12"/><path d="M6 13h10"/></svg>',
+    pin: '<svg class="icon-svg" viewBox="0 0 24 24"><line x1="12" x2="12" y1="17" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>',
+    link: '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    trash: '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>',
+    bell: '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+    info: '<svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+    package: '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>'
+};
+
+function getIcon(name, className = '') {
+    return icons[name] ? icons[name].replace('class="icon-svg"', `class="icon-svg ${className}"`) : '';
+}
+
+
 // Product type detection
 const PRODUCT_TYPES = {
     "Booster Boxes": ["booster box", "booster case"],
@@ -296,7 +316,9 @@ function renderCategoryFeed(category) {
     if (items.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">📦</div>
+                <div class="empty-state-icon">
+                    <svg class="icon-svg" style="width: 48px; height: 48px;" viewBox="0 0 24 24"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>
+                </div>
                 <div class="empty-state-text">No notifications in ${category}</div>
             </div>
         `;
@@ -308,18 +330,18 @@ function renderCategoryFeed(category) {
 
     container.innerHTML = items.map(notif => `
         <div class="notification-card" data-id="${notif.id}">
-            ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
+            ${notif.isPinned ? '<div class="pin-indicator"><svg class="icon-svg inline-icon" viewBox="0 0 24 24"><line x1="12" x2="12" y1="17" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg> Pinned</div>' : ''}
             <div class="notification-header">
-                <div class="shop-name">🏪 ${notif.shop_name}</div>
-                <div class="notification-time">🕐 ${formatDate(notif.timestamp)}</div>
+                <div class="shop-name"><svg class="icon-svg inline-icon" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg> ${notif.shop_name}</div>
+                <div class="notification-time"><svg class="icon-svg inline-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(notif.timestamp)}</div>
             </div>
             <div class="product-name">${notif.product_name}</div>
             <div class="notification-info">
-                ${notif.price ? `<span>💰 ${notif.price}</span>` : ''}
+                ${notif.price ? `<span><svg class="icon-svg inline-icon" viewBox="0 0 24 24"><path d="M18 7c0-5.333-8-5.333-8 0"/><path d="M10 7v14"/><path d="M6 21h12"/><path d="M6 13h10"/></svg> ${notif.price}</span>` : ''}
                 ${notif.is_new ? '<span class="new-badge">NEW PRODUCT!</span>' : ''}
             </div>
             <a href="${notif.product_link}" class="view-product-btn" target="_blank" rel="noopener">
-                🔗 View Product
+                <svg class="icon-svg inline-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> View Product
             </a>
         </div>
     `).join('');
@@ -427,14 +449,15 @@ function showContextMenu(notifId) {
 
     menuTitle.textContent = notif.product_name.substring(0, 50) + (notif.product_name.length > 50 ? '...' : '');
 
-    const pinText = notif.isPinned ? '📌 Unpin Notification' : '📌 Pin Notification';
+    const pinIcon = '<svg class="icon-svg inline-icon" viewBox="0 0 24 24"><line x1="12" x2="12" y1="17" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>';
+    const pinText = notif.isPinned ? `${pinIcon} Unpin Notification` : `${pinIcon} Pin Notification`;
     
     menuOptions.innerHTML = `
         <div class="context-option" onclick="togglePin('${notifId}')">
             ${pinText}
         </div>
         <div class="context-option" onclick="markAsUnread('${notifId}')">
-            👁️ Mark as Unread
+            <svg class="icon-svg inline-icon" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Mark as Unread
         </div>
     `;
 
@@ -645,7 +668,9 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
     if (filtered.length === 0) {
         results.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-icon">
+                    <svg class="icon-svg" style="width: 48px; height: 48px;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
                 <div class="empty-state-text">No results found</div>
             </div>
         `;
@@ -653,17 +678,17 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
         const sortedFiltered = sortNotifications(filtered);
         results.innerHTML = sortedFiltered.map(notif => `
             <div class="notification-card search-result" data-navigate-id="${notif.id}">
-                ${notif.isPinned ? '<div class="pin-indicator">📌 Pinned</div>' : ''}
+                ${notif.isPinned ? '<div class="pin-indicator"><svg class="icon-svg inline-icon" viewBox="0 0 24 24"><line x1="12" x2="12" y1="17" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg> Pinned</div>' : ''}
                 <div class="notification-header">
-                    <div class="shop-name">🏪 ${notif.shop_name}</div>
-                    <div class="notification-time">🕐 ${formatDate(notif.timestamp)}</div>
+                    <div class="shop-name"><svg class="icon-svg inline-icon" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg> ${notif.shop_name}</div>
+                    <div class="notification-time"><svg class="icon-svg inline-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(notif.timestamp)}</div>
                 </div>
                 <div class="product-name">${notif.product_name}</div>
                 <div class="notification-info">
-                    ${notif.price ? `<span>💰 ${notif.price}</span>` : ''}
+                    ${notif.price ? `<span><svg class="icon-svg inline-icon" viewBox="0 0 24 24"><path d="M18 7c0-5.333-8-5.333-8 0"/><path d="M10 7v14"/><path d="M6 21h12"/><path d="M6 13h10"/></svg> ${notif.price}</span>` : ''}
                     ${notif.is_new ? '<span class="new-badge">NEW PRODUCT!</span>' : ''}
                 </div>
-                <div class="tap-hint">👆 Tap to view in category</div>
+                <div class="tap-hint">Tap to view in category</div>
             </div>
         `).join('');
         
