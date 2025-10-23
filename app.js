@@ -401,9 +401,13 @@ function togglePin(notifId) {
     
     if (notif.isPinned) {
         state.pinnedIds.add(notifId);
+        // Clear unpinned_date when pinning (user re-pinned it)
+        delete notif.unpinned_date;
         showToast('Notification pinned!');
     } else {
         state.pinnedIds.delete(notifId);
+        // Track when item was unpinned (for 30-day grace period)
+        notif.unpinned_date = new Date().toISOString();
         showToast('Notification unpinned!');
     }
 
@@ -683,10 +687,11 @@ function loadLocalState() {
     }
 }
 
-// Auto-cleanup: Remove notifications older than 3 months (except pinned/unread)
+// Auto-cleanup: Remove notifications older than 3 months (except pinned/unread/recently unpinned)
 function autoCleanupOldNotifications() {
     const LAST_CLEANUP_KEY = 'pokemon_last_cleanup';
     const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000; // 90 days in milliseconds
+    const GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000; // 30 days grace period after unpinning
     
     try {
         const lastCleanup = localStorage.getItem(LAST_CLEANUP_KEY);
@@ -699,15 +704,26 @@ function autoCleanupOldNotifications() {
         
         const before = state.notifications.length;
         const cutoffDate = new Date(Date.now() - THREE_MONTHS_MS);
+        const gracePeriodCutoff = new Date(Date.now() - GRACE_PERIOD_MS);
         
-        // Keep: Pinned items, Unread items, OR items newer than 3 months
+        // Keep: Pinned items, Unread items, recently unpinned items, OR items newer than 3 months
         state.notifications = state.notifications.filter(notif => {
+            // Always keep pinned and unread
             if (notif.isPinned || notif.isUnread) {
-                return true; // Always keep pinned and unread
+                return true;
             }
             
+            // Keep if unpinned within last 30 days (grace period)
+            if (notif.unpinned_date) {
+                const unpinnedDate = new Date(notif.unpinned_date);
+                if (unpinnedDate > gracePeriodCutoff) {
+                    return true; // Still in grace period
+                }
+            }
+            
+            // Keep if notification itself is newer than 3 months
             const notifDate = new Date(notif.timestamp);
-            return notifDate > cutoffDate; // Keep if newer than 3 months
+            return notifDate > cutoffDate;
         });
         
         // Clean up orphaned IDs
