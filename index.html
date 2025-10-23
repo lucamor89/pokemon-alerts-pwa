@@ -57,9 +57,12 @@
                 <button class="close-btn" onclick="closeSettings()">✕</button>
             </div>
             <div class="modal-body">
-                <div class="setting-item">
-                    <span>🌙 Dark Mode</span>
-                    <span class="setting-value">Enabled</span>
+                <div class="setting-item" onclick="toggleTheme()">
+                    <span>Theme</span>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="themeToggle">
+                        <span class="theme-slider"></span>
+                    </label>
                 </div>
                 <div class="setting-item disabled">
                     <span>🔔 Push Notifications</span>
