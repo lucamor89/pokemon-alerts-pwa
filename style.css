@@ -612,3 +612,46 @@ body.light-mode .theme-slider {
 body.light-mode input:checked + .theme-slider {
     background-color: var(--accent);
 }
+
+/* Lucide Icons - SVG Icon Styles */
+.icon-svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Icon sizes */
+.icon-svg.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-svg.icon-md {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-svg.icon-lg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Icon in buttons */
+.icon-btn .icon-svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Inline icons (price, shop, time) */
+.inline-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+    margin-right: 4px;
+}
