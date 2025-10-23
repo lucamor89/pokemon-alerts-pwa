@@ -5,7 +5,8 @@ const CONFIG = {
     JSONBIN_BROTHERHOOD_URL: 'https://api.jsonbin.io/v3/b/68ed7ca9ae596e708f1212e7',
     JSONBIN_MYTHIC_URL: 'https://api.jsonbin.io/v3/b/68ed7d3e43b1c97be9665da4',
     REFRESH_INTERVAL: 60000, // 60 seconds
-    STORAGE_KEY: 'pokemon_stock_alerts'
+    STORAGE_KEY: 'pokemon_stock_alerts',
+    // VAPID_PUBLIC_KEY: 'YOUR_VAPID_PUBLIC_KEY_HERE' // TODO: Generate VAPID keys for push notifications
 };
 
 // Lucide Icons - SVG Helper Functions
@@ -70,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchAllNotifications();
     setupAutoRefresh();
     setupBackButton();
+    checkPushPermission(); // Check push notification permission state
 });
 
 // Fetch notifications from all JSONBin stores
@@ -592,6 +594,158 @@ function loadThemePreference() {
         if (toggle) toggle.checked = false;
         if (label) label.textContent = 'Dark';
     }
+}
+
+// Push Notifications Toggle
+async function togglePushNotifications() {
+    const toggle = document.getElementById('pushToggle');
+    const label = document.getElementById('pushLabel');
+    const isEnabled = toggle.checked;
+    
+    if (isEnabled) {
+        // User wants to enable push notifications
+        try {
+            const permission = await Notification.requestPermission();
+            
+            if (permission === 'granted') {
+                // Subscribe to push notifications
+                await subscribeToPush();
+                label.textContent = 'On';
+                localStorage.setItem('pushNotifications', 'enabled');
+                showToast('✓ Push notifications enabled');
+            } else {
+                // Permission denied
+                toggle.checked = false;
+                label.textContent = 'Off';
+                localStorage.setItem('pushNotifications', 'disabled');
+                showToast('Push notifications blocked - check browser settings');
+            }
+        } catch (error) {
+            console.error('Push notification error:', error);
+            toggle.checked = false;
+            label.textContent = 'Off';
+            showToast('Failed to enable push notifications');
+        }
+    } else {
+        // User wants to disable push notifications
+        await unsubscribeFromPush();
+        label.textContent = 'Off';
+        localStorage.setItem('pushNotifications', 'disabled');
+        showToast('Push notifications disabled');
+    }
+}
+
+// Subscribe to push notifications
+async function subscribeToPush() {
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        
+        // Check if already subscribed
+        let subscription = await registration.pushManager.getSubscription();
+        
+        if (!subscription) {
+            // Create new subscription
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(CONFIG.VAPID_PUBLIC_KEY || '')
+            });
+            
+            console.log('[Push] Subscribed:', subscription.endpoint);
+            
+            // TODO: Send subscription to your backend server
+            // await fetch('/api/subscribe', {
+            //     method: 'POST',
+            //     body: JSON.stringify(subscription),
+            //     headers: { 'Content-Type': 'application/json' }
+            // });
+        }
+        
+        return subscription;
+    } catch (error) {
+        console.error('[Push] Subscription failed:', error);
+        throw error;
+    }
+}
+
+// Unsubscribe from push notifications
+async function unsubscribeFromPush() {
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        
+        if (subscription) {
+            await subscription.unsubscribe();
+            console.log('[Push] Unsubscribed');
+            
+            // TODO: Remove subscription from your backend server
+            // await fetch('/api/unsubscribe', {
+            //     method: 'POST',
+            //     body: JSON.stringify({ endpoint: subscription.endpoint }),
+            //     headers: { 'Content-Type': 'application/json' }
+            // });
+        }
+    } catch (error) {
+        console.error('[Push] Unsubscribe failed:', error);
+    }
+}
+
+// Check push notification permission state on startup
+async function checkPushPermission() {
+    const toggle = document.getElementById('pushToggle');
+    const label = document.getElementById('pushLabel');
+    
+    if (!('Notification' in window)) {
+        // Browser doesn't support notifications
+        toggle.disabled = true;
+        label.textContent = 'Not Supported';
+        return;
+    }
+    
+    const permission = Notification.permission;
+    const savedPref = localStorage.getItem('pushNotifications');
+    
+    if (permission === 'granted' && savedPref === 'enabled') {
+        // Check if actually subscribed
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+            
+            if (subscription) {
+                toggle.checked = true;
+                label.textContent = 'On';
+            } else {
+                // Permission granted but not subscribed - re-subscribe
+                toggle.checked = false;
+                label.textContent = 'Off';
+            }
+        } catch (error) {
+            toggle.checked = false;
+            label.textContent = 'Off';
+        }
+    } else if (permission === 'denied') {
+        // User blocked notifications at browser level
+        toggle.checked = false;
+        label.textContent = 'Blocked';
+        localStorage.setItem('pushNotifications', 'disabled');
+    } else {
+        // Default state (not asked yet or default)
+        toggle.checked = false;
+        label.textContent = 'Off';
+    }
+}
+
+// Helper function to convert VAPID key
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
 }
 
 
